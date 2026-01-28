@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="meter_reading_report" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="MySQL_EnergyTrack"/>
+	<!-- 仅保留基本的字体配置 -->
+	<property name="net.sf.jasperreports.default.font.name" value="SimSun"/>
+	<property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
+	<property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+
+	<parameter name="meterId" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[2]]></defaultValueExpression>
+	</parameter>
+	<parameter name="startTime" class="java.sql.Timestamp">
+		<defaultValueExpression><![CDATA[new java.sql.Timestamp(new java.util.Date("2025-03-25 00:00:00").getTime())]]></defaultValueExpression>
+	</parameter>
+	<parameter name="endTime" class="java.sql.Timestamp">
+		<defaultValueExpression><![CDATA[new java.sql.Timestamp(new java.util.Date("2025-03-27 23:59:59").getTime())]]></defaultValueExpression>
+	</parameter>
+
+	<queryString language="sql">
+		<![CDATA[SELECT meter_id AS meterId, reading_value AS readingValue, reading_time AS readingTime
+                 FROM meter_reading
+                 WHERE meter_id = $P{meterId}
+                 AND reading_time BETWEEN $P{startTime} AND $P{endTime}
+                 ORDER BY reading_time ASC]]>
+	</queryString>
+
+	<field name="meterId" class="java.lang.Integer"/>
+	<field name="readingValue" class="java.math.BigDecimal"/>
+	<field name="readingTime" class="java.util.Date"/>
+
+	<!-- 变量定义 -->
+	<variable name="recordCount" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{meterId}]]></variableExpression>
+	</variable>
+	<variable name="firstReading" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{recordCount} == 1 ? $F{readingValue} : $V{firstReading}]]></variableExpression>
+		<initialValueExpression><![CDATA[null]]></initialValueExpression>
+	</variable>
+	<variable name="lastReading" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{readingValue}]]></variableExpression>
+	</variable>
+	<variable name="totalDiff" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{firstReading} == null || $V{lastReading} == null ? null : $V{lastReading}.subtract($V{firstReading})]]></variableExpression>
+	</variable>
+	<variable name="days" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[new java.math.BigDecimal(($P{endTime}.getTime() - $P{startTime}.getTime()) / (1000 * 60 * 60 * 24))]]></variableExpression>
+	</variable>
+	<variable name="avgDailyReading" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{totalDiff} == null || $V{days}.compareTo(java.math.BigDecimal.ZERO) == 0 ? java.math.BigDecimal.ZERO : $V{totalDiff}.divide($V{days}, 2, java.math.RoundingMode.HALF_UP)]]></variableExpression>
+	</variable>
+
+	<!-- 报表布局 -->
+	<title>
+		<band height="50">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="40"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[电表读数统计报表]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="50">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<text><![CDATA[电表ID:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="0" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{meterId}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<text><![CDATA[时间范围:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="20" width="455" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{startTime} + " 至 " + $P{endTime}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20" backcolor="#CCCCCC"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun" isBold="true"/>
+				</textElement>
+				<text><![CDATA[电表ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="100" y="0" width="150" height="20" backcolor="#CCCCCC"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun" isBold="true"/>
+				</textElement>
+				<text><![CDATA[读数值]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="250" y="0" width="305" height="20" backcolor="#CCCCCC"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun" isBold="true"/>
+				</textElement>
+				<text><![CDATA[读数时间]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{meterId}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="150" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{readingValue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="250" y="0" width="305" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="SimSun"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{readingTime}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="60">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[总读数:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="0" width="150" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{totalDiff} == null ? "N/A" : $V{totalDiff}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[记录数:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="20" width="150" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{recordCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="40" width="100" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[平均每日读数:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="40" width="150" height="20"/>
+				<textElement>
+					<font fontName="SimSun" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{avgDailyReading} == null ? "N/A" : $V{avgDailyReading}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+	<noData>
+		<band height="50">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="50"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SimSun" size="12"/>
+				</textElement>
+				<text><![CDATA[没有找到符合条件的读数数据]]></text>
+			</staticText>
+		</band>
+	</noData>
+</jasperReport>

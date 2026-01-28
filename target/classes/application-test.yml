@@ -1,0 +1,27 @@
+server:
+  port: 8085
+
+spring:
+  datasource:
+    url: jdbc:mysql://129.211.15.160/energytrack?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: Xcl17623392517.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    # 设置 MyBatis 的日志实现类，这里使用的是标准输出日志实现类（org.apache.ibatis.logging.stdout.StdOutImpl）
+    # 用于在控制台打印 SQL 日志，方便调试和查看 SQL 执行情况
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+    # 当查询结果为空时，是否返回一个空的实例对象
+    # 如果设置为 true，当查询没有匹配的记录时，MyBatis 会返回一个空实例，而不是 null
+    return-instance-for-empty-row: true
+
+    # 是否将数据库的下划线命名方式映射为 Java 类的驼峰命名方式
+    # 设置为 true 时，MyBatis-Plus 会将数据库中如 "sysuser_name" 自动映射为 Java 类中的 "sysUserName"
+    map-underscore-to-camel-case: true
+
+  # 指定实体类所在的包路径，用于 MyBatis-Plus 自动扫描这些类并进行映射
+  # 在该路径下的实体类将自动被 MyBatis-Plus 作为数据库表的映射类
+  type-aliases-package: cn.edu.cqrk.energytrack.entity.pojo

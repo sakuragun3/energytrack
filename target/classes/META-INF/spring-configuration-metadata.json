@@ -1,0 +1,23 @@
+{
+  "groups": [
+    {
+      "name": "jwt",
+      "type": "cn.edu.cqrk.energytrack.config.JwtProperties",
+      "sourceType": "cn.edu.cqrk.energytrack.config.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "sourceType": "cn.edu.cqrk.energytrack.config.JwtProperties",
+      "defaultValue": 0
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "cn.edu.cqrk.energytrack.config.JwtProperties"
+    }
+  ],
+  "hints": []
+}
